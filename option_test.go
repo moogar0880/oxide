@@ -3,7 +3,7 @@ package oxide
 import (
 	"testing"
 
-	"github.com/moogar0880/collections/iter/assert"
+	"github.com/moogar0880/oxide/assert"
 )
 
 type aTestStruct struct {
