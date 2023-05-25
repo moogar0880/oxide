@@ -11,8 +11,8 @@ APIs to the Go programming language.
 tooling from the rust standard library whenever I was working in Go. Obviously
 bridging that gap in its entirety is a non-starter and likely far out of scope 
 for any one library. However, one pain point that I thought could be 
-particularly helpful, now that Go Generics have been around for a while, is 
-Iterators. In the end there were several other types that needed to be 
+particularly helpful to address, now that Go Generics have been around for a 
+while, is Iterators. In the end there were several other types that needed to be 
 introduced as well in order to keep the APIs sane. At the onset it was unclear 
 to me how plausible this would be given how new generics are to the Go type 
 system, but in the end the experiment resulted in a library that I believe is
