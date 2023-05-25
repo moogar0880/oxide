@@ -1,5 +1,7 @@
 # oxide
 
+[![Build Status](https://github.com/moogar0880/oxide/actions/workflows/test.yml/badge.svg)](https://github.com/moogar0880/oxide/actions/workflows/test.yml)
+
 Oxide is an experimental library designed to bring the flexibility of some Rust
 APIs to the Go programming language.
 
