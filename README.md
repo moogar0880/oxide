@@ -46,10 +46,10 @@ func main() {
 	x := oxide.Some(5)
 
 	if x.IsSome() {
-        fmt.Printf("x = oxide.Some(%d)\n", x.Value())
-    } else {
+		fmt.Printf("x = oxide.Some(%d)\n", x.Value())
+	} else {
 		fmt.Println("x is None")
-    }
+	}
 }
 ```
 
@@ -72,8 +72,8 @@ func main() {
 	data := []int{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10}
     
 	slice := iterator.FromSlice(data).Filter(func(i *int) bool{
-	    return *i%2 == 0
-    }).CollectSlice()
+		return *i%2 == 0
+	}).CollectSlice()
 	fmt.Println(slice) // []int{0, 2, 4, 6, 8, 10}
 }
 ```
@@ -100,8 +100,8 @@ func main() {
 	data := []int{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10}
     
 	slice := iter.CollectSlice(iter.Filter(iter.FromSlice(data), func(i *int) bool{
-	    return *i%2 == 0
-    }))
+		return *i%2 == 0
+	}))
 	fmt.Println(slice) // []int{0, 2, 4, 6, 8, 10}
 }
 ```
@@ -116,7 +116,7 @@ import (
 	"fmt"
 
 	"github.com/moogar0880/oxide/iter"
-    "github.com/moogar0880/oxide/math"
+	"github.com/moogar0880/oxide/math"
 )
 
 func main() {
