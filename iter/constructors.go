@@ -2,6 +2,7 @@ package iter
 
 import (
 	"github.com/moogar0880/oxide"
+	"github.com/moogar0880/oxide/constraints"
 )
 
 // FromSlice returns a new iterator that can be used to iterate over the
@@ -24,6 +25,12 @@ func FromMap[K comparable, V any](data map[K]V) Interface[MapEntry[K, V]] {
 // the values yielded by the provided channel.
 func FromChannel[T any](data <-chan T) Interface[T] {
 	return &chanIterator[T]{data: data}
+}
+
+// Range returns a new iterator which can be used to iterate over all values in
+// a range of numbers.
+func Range[T constraints.Integer](from, to T) Interface[T] {
+	return &rangeIterator[T]{current: from, max: to}
 }
 
 type sliceIterator[T any] struct {
@@ -84,4 +91,17 @@ func (i *chanIterator[T]) SizeHint() (int64, oxide.Option[int64]) {
 	}
 
 	return 0, oxide.Some(int64(max))
+}
+
+type rangeIterator[T constraints.Integer] struct {
+	current, max T
+}
+
+func (r *rangeIterator[T]) Next() (T, bool) {
+	if r.current >= r.max {
+		return 0, false
+	}
+
+	r.current++
+	return r.current, true
 }

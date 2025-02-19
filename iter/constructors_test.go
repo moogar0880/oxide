@@ -53,3 +53,47 @@ func TestFromChannel(t *testing.T) {
 	slice := CollectSlice(iter)
 	assert.Equal(t, 10, len(slice))
 }
+
+func TestFromNilChan(t *testing.T) {
+	var channel chan int
+
+	iter := FromChannel(channel)
+	lower, upper := iter.(SizeHinter).SizeHint()
+	assert.Equal(t, true, upper.IsNone())
+	assert.Equal(t, int64(0), lower)
+}
+
+func TestRange(t *testing.T) {
+	testIO := []struct {
+		name   string
+		from   int
+		to     int
+		expect int
+	}{
+		{
+			name:   "should yield zero elements",
+			from:   0,
+			to:     0,
+			expect: 0,
+		},
+		{
+			name:   "should yield one element",
+			from:   0,
+			to:     1,
+			expect: 1,
+		},
+		{
+			name:   "should yield 10 elements",
+			from:   0,
+			to:     9,
+			expect: 9,
+		},
+	}
+
+	for _, test := range testIO {
+		t.Run(test.name, func(t *testing.T) {
+			count := Count(Range(test.from, test.to))
+			assert.Equal(t, test.expect, count)
+		})
+	}
+}

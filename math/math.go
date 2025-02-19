@@ -1,15 +1,18 @@
 package math
 
-import "github.com/moogar0880/oxide/iter"
+import (
+	"github.com/moogar0880/oxide/constraints"
+	"github.com/moogar0880/oxide/iter"
+)
 
-// A Number is a generic type which accounts for all of the builtin numerical
-// types.
-type Number interface {
-	int | int8 | int16 | int32 | int64 | uint | uint8 | uint16 | uint32 | uint64 | float32 | float64
-}
+// A Number is a generic type which accounts for all the builtin
+// numerical types.
+//
+// Deprecated. Use the interface definition from `constraints` directly.
+type Number = constraints.Number
 
 // Sum returns the sum of all values yielded by the provided iterator.
-func Sum[T Number](iterator iter.Interface[T]) (value T) {
+func Sum[T constraints.Number](iterator iter.Interface[T]) (value T) {
 	return iter.Fold(iterator, value, func(accum T, value *T) T {
 		accum += *value
 
@@ -18,7 +21,7 @@ func Sum[T Number](iterator iter.Interface[T]) (value T) {
 }
 
 // Product returns the product of all values yielded by the provided iterator.
-func Product[T Number](iterator iter.Interface[T]) (value T) {
+func Product[T constraints.Number](iterator iter.Interface[T]) (value T) {
 	return iter.Fold(iterator, value, func(accum T, value *T) T {
 		if accum == 0 {
 			return *value
@@ -29,7 +32,7 @@ func Product[T Number](iterator iter.Interface[T]) (value T) {
 }
 
 // Min returns the minimum of all values yielded by the provided iterator.
-func Min[T Number](iterator iter.Interface[T]) T {
+func Min[T constraints.Number](iterator iter.Interface[T]) T {
 	min, _ := iterator.Next()
 
 	for item, ok := iterator.Next(); ok; item, ok = iterator.Next() {
@@ -42,7 +45,7 @@ func Min[T Number](iterator iter.Interface[T]) T {
 }
 
 // Max returns the maximum of all values yielded by the provided iterator.
-func Max[T Number](iterator iter.Interface[T]) (value T) {
+func Max[T constraints.Number](iterator iter.Interface[T]) (value T) {
 	max, _ := iterator.Next()
 
 	for item, ok := iterator.Next(); ok; item, ok = iterator.Next() {
