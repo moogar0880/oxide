@@ -44,6 +44,10 @@ godoc:
 test:
 	@go test $(GO_TEST_OPTS) $(GO_TEST_PKGS)
 
+.PHONY: test/benchmark
+test/benchmark:
+	@go test -v -run=XXX -bench=. -benchmem $(GO_TEST_PKGS)
+
 .PHONY: test/coverage
 test/coverage: test
 	@go tool cover -html=cover.out
