@@ -150,3 +150,31 @@ func TestMax(t *testing.T) {
 		})
 	}
 }
+
+func BenchmarkSum(b *testing.B) {
+	iterator := iter.Range(0, b.N)
+	for i := 0; i < b.N; i++ {
+		_ = Sum(iterator)
+	}
+}
+
+func BenchmarkProduct(b *testing.B) {
+	iterator := iter.Range(0, b.N)
+	for i := 0; i < b.N; i++ {
+		_ = Product(iterator)
+	}
+}
+
+func BenchmarkMin(b *testing.B) {
+	iterator := iter.Range(0, b.N)
+	for i := 0; i < b.N; i++ {
+		_ = Min(iterator)
+	}
+}
+
+func BenchmarkMax(b *testing.B) {
+	iterator := iter.Range(0, b.N)
+	for i := 0; i < b.N; i++ {
+		_ = Max(iterator)
+	}
+}
