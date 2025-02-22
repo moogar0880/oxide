@@ -783,6 +783,58 @@ func TestIntersperse(t *testing.T) {
 	}
 }
 
+func TestInterleave(t *testing.T) {
+	testIO := []struct {
+		name       string
+		iter1      Interface[int]
+		iter2      Interface[int]
+		expect     []int
+		expectSize oxide.Option[int64]
+	}{
+		{
+			name:       "should interleave balanced values",
+			iter1:      FromSlice([]int{1, 3, 5, 7, 9}),
+			iter2:      FromSlice([]int{2, 4, 6, 8, 10}),
+			expect:     []int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10},
+			expectSize: oxide.Some[int64](10),
+		},
+		{
+			name:       "should interleave unbalanced values (left heavy)",
+			iter1:      FromSlice([]int{1, 3, 5}),
+			iter2:      FromSlice([]int{2}),
+			expect:     []int{1, 2, 3, 5},
+			expectSize: oxide.Some[int64](4),
+		},
+		{
+			name:       "should interleave unbalanced values (right heavy)",
+			iter1:      FromSlice([]int{1}),
+			iter2:      FromSlice([]int{2, 4, 6}),
+			expect:     []int{1, 2, 4, 6},
+			expectSize: oxide.Some[int64](4),
+		},
+		{
+			name:       "should return no values and have no size hint if both iterators do not implement SizeHint",
+			iter1:      new(unboundedIterator),
+			iter2:      new(unboundedIterator),
+			expect:     []int{},
+			expectSize: oxide.None[int64](),
+		},
+	}
+
+	for _, test := range testIO {
+		t.Run(test.name, func(t *testing.T) {
+			iterator := Interleave(test.iter1, test.iter2)
+			lower, size := iterator.(SizeHinter).SizeHint()
+			assert.Equal(t, int64(0), lower)
+			assert.Equal(t, test.expectSize, size)
+
+			actual := CollectSlice(iterator)
+
+			assert.Equal(t, test.expect, actual)
+		})
+	}
+}
+
 type unboundedIterator struct{}
 
 func (*unboundedIterator) Next() (data int, present bool) { return }

@@ -400,3 +400,70 @@ func Intersperse[T any](iter Interface[T], sep T) Interface[T] {
 		needsSep: false,
 	}
 }
+
+type interleaveIterator[T any] struct {
+	iterI, iterJ    Interface[T]
+	nextComingFromJ bool
+}
+
+func (i *interleaveIterator[T]) Next() (T, bool) {
+	i.nextComingFromJ = !i.nextComingFromJ
+	if i.nextComingFromJ {
+		value, ok := i.iterI.Next()
+		if !ok {
+			return i.iterJ.Next()
+		}
+
+		return value, true
+	}
+
+	value, ok := i.iterJ.Next()
+	if !ok {
+		return i.iterI.Next()
+	}
+
+	return value, true
+}
+
+func (i *interleaveIterator[T]) SizeHint() (int64, oxide.Option[int64]) {
+	iterI, iOk := i.iterI.(SizeHinter)
+	iterJ, jOk := i.iterJ.(SizeHinter)
+
+	if !iOk && !jOk {
+		return 0, oxide.None[int64]()
+	}
+
+	var iLower, jLower int64
+	var iUpper, jUpper oxide.Option[int64]
+
+	if iOk {
+		iLower, iUpper = iterI.SizeHint()
+	}
+
+	if jOk {
+		jLower, jUpper = iterJ.SizeHint()
+	}
+
+	lower := iLower + jLower
+	var upper int64
+
+	if iUpper.IsSome() {
+		upper += iUpper.Value()
+	}
+
+	if jUpper.IsSome() {
+		upper += jUpper.Value()
+	}
+
+	return lower, oxide.Some[int64](upper)
+}
+
+// Interleave returns an iterator which alternates elements from two iterators
+// until both Iterators are fully consumed.
+func Interleave[T any](iter1, iter2 Interface[T]) Interface[T] {
+	return &interleaveIterator[T]{
+		iterI:           iter1,
+		iterJ:           iter2,
+		nextComingFromJ: false,
+	}
+}

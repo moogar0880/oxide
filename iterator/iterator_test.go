@@ -826,3 +826,39 @@ func TestIterator_Intersperse(t *testing.T) {
 		})
 	}
 }
+
+func TestIterator_Interleave(t *testing.T) {
+	testIO := []struct {
+		name   string
+		iter1  *Iterator[int]
+		iter2  iter.Interface[int]
+		expect []int
+	}{
+		{
+			name:   "should interleave balanced values",
+			iter1:  FromSlice([]int{1, 3, 5, 7, 9}),
+			iter2:  FromSlice([]int{2, 4, 6, 8, 10}),
+			expect: []int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10},
+		},
+		{
+			name:   "should interleave unbalanced values (left heavy)",
+			iter1:  FromSlice([]int{1, 3, 5}),
+			iter2:  FromSlice([]int{2}),
+			expect: []int{1, 2, 3, 5},
+		},
+		{
+			name:   "should interleave unbalanced values (right heavy)",
+			iter1:  FromSlice([]int{1}),
+			iter2:  FromSlice([]int{2, 4, 6}),
+			expect: []int{1, 2, 4, 6},
+		},
+	}
+
+	for _, test := range testIO {
+		t.Run(test.name, func(t *testing.T) {
+			actual := test.iter1.Interleave(test.iter2).CollectSlice()
+
+			assert.Equal(t, test.expect, actual)
+		})
+	}
+}
