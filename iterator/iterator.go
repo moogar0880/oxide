@@ -103,6 +103,18 @@ func (i *Iterator[T]) Intersperse(sep T) *Iterator[T] {
 	return NewIterator(iter.Intersperse(i.inner, sep))
 }
 
+// Interleave returns a new Iterator which alternates elements from two
+// iterators until both Iterators are fully consumed.
+func (i *Iterator[T]) Interleave(other iter.Interface[T]) *Iterator[T] {
+	return NewIterator(iter.Interleave(i.inner, other))
+}
+
+// Sorted returns a new Iterator in which all elements are sorted according to
+// the provided sorting function.
+func (i *Iterator[T]) Sorted(lessFunc func(i, j T) bool) *Iterator[T] {
+	return NewIterator(iter.Sorted(i.inner, lessFunc))
+}
+
 // Count consumes the Iterator and returns the count of all items in the
 // iterator.
 func (i *Iterator[T]) Count() int {

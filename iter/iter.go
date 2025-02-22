@@ -1,6 +1,10 @@
 package iter
 
-import "github.com/moogar0880/oxide"
+import (
+	"sort"
+
+	"github.com/moogar0880/oxide"
+)
 
 // Count consumes the provided iterator, returning the number of iterations
 // that were made before the first None value is encountered.
@@ -399,4 +403,105 @@ func Intersperse[T any](iter Interface[T], sep T) Interface[T] {
 		sep:      sep,
 		needsSep: false,
 	}
+}
+
+type interleaveIterator[T any] struct {
+	iterI, iterJ    Interface[T]
+	nextComingFromJ bool
+}
+
+func (i *interleaveIterator[T]) Next() (T, bool) {
+	i.nextComingFromJ = !i.nextComingFromJ
+	if i.nextComingFromJ {
+		value, ok := i.iterI.Next()
+		if !ok {
+			return i.iterJ.Next()
+		}
+
+		return value, true
+	}
+
+	value, ok := i.iterJ.Next()
+	if !ok {
+		return i.iterI.Next()
+	}
+
+	return value, true
+}
+
+func (i *interleaveIterator[T]) SizeHint() (int64, oxide.Option[int64]) {
+	iterI, iOk := i.iterI.(SizeHinter)
+	iterJ, jOk := i.iterJ.(SizeHinter)
+
+	if !iOk && !jOk {
+		return 0, oxide.None[int64]()
+	}
+
+	var iLower, jLower int64
+	var iUpper, jUpper oxide.Option[int64]
+
+	if iOk {
+		iLower, iUpper = iterI.SizeHint()
+	}
+
+	if jOk {
+		jLower, jUpper = iterJ.SizeHint()
+	}
+
+	lower := iLower + jLower
+	var upper int64
+
+	if iUpper.IsSome() {
+		upper += iUpper.Value()
+	}
+
+	if jUpper.IsSome() {
+		upper += jUpper.Value()
+	}
+
+	return lower, oxide.Some[int64](upper)
+}
+
+// Interleave returns an iterator which alternates elements from two iterators
+// until both Iterators are fully consumed.
+func Interleave[T any](iter1, iter2 Interface[T]) Interface[T] {
+	return &interleaveIterator[T]{
+		iterI:           iter1,
+		iterJ:           iter2,
+		nextComingFromJ: false,
+	}
+}
+
+// Sorted returns an Interface in which all elements are sorted according to
+// the provided sorting function.
+func Sorted[T any](iter Interface[T], lessFunc func(a, b T) bool) Interface[T] {
+	sorter := &iterSort[T]{lessFunc: lessFunc, data: CollectSlice(iter)}
+	sort.Sort(sorter)
+
+	return FromSlice(sorter.data)
+}
+
+// iterSort enables dynamically sorting values of type T using a specified
+// implementation of the Less function required to implement the sort.Interface.
+type iterSort[T any] struct {
+	lessFunc func(a, b T) bool
+	data     []T
+}
+
+// Len implements sort.Interface and returns the number of elements in the
+// collection.
+func (s *iterSort[T]) Len() int {
+	return len(s.data)
+}
+
+// Less implements sort.Interface and reports whether the element with index i
+// must sort before the element with index j.
+func (s *iterSort[T]) Less(i, j int) bool {
+	return s.lessFunc(s.data[i], s.data[j])
+}
+
+// Swap implements sort.Interface and is responsible for swapping the elements
+// with indexes i and j.
+func (s *iterSort[T]) Swap(i, j int) {
+	s.data[i], s.data[j] = s.data[j], s.data[i]
 }

@@ -1,6 +1,10 @@
 package iter
 
-import "context"
+import (
+	"context"
+	"fmt"
+	"strings"
+)
 
 // CollectSlice consumes the provided Interface into a slice of type T.
 func CollectSlice[T any](from Interface[T]) []T {
@@ -56,4 +60,22 @@ func CollectChan[T any](ctx context.Context, from Interface[T], buffer int) <-ch
 		}
 	}(out)
 	return out
+}
+
+// Join consumes all values in the provided iterator and concatenates the
+// elements to create a single string.
+//
+// The separator string sep is placed between elements in the resulting string.
+func Join(iter Interface[string], sep string) string {
+	return strings.Join(CollectSlice(iter), sep)
+}
+
+// JoinStringer behaves similarly to Join but accepts any value which can be
+// converted to a string via the fmt.Stringer interface.
+//
+// For additional details see Join and fmt.Stringer.
+func JoinStringer[T fmt.Stringer](iter Interface[T], sep string) string {
+	return Join(Map(iter, func(f T) string {
+		return f.String()
+	}), sep)
 }
