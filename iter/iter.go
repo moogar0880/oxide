@@ -482,8 +482,7 @@ func Sorted[T any](iter Interface[T], lessFunc func(a, b T) bool) Interface[T] {
 }
 
 // iterSort enables dynamically sorting values of type T using a specified
-// implementation of the Less function required to implement the sort.Interface
-// interface.
+// implementation of the Less function required to implement the sort.Interface.
 type iterSort[T any] struct {
 	lessFunc func(a, b T) bool
 	data     []T
