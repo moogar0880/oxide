@@ -2,6 +2,8 @@ package iter
 
 import (
 	"context"
+	"fmt"
+	"net/url"
 	"strconv"
 	"testing"
 
@@ -132,6 +134,89 @@ func TestCollectChan_Timeout(t *testing.T) {
 	// contrived examples such as this one, so just assert we got roughly what
 	// we expected.
 	assert.Equal(t, true, len(collected) < 5)
+}
+
+func TestJoin(t *testing.T) {
+	testIO := []struct {
+		name   string
+		iter   Interface[string]
+		sep    string
+		expect string
+	}{
+		{
+			name:   "should do nothing with empty iterator",
+			iter:   FromSlice([]string{}),
+			sep:    ",",
+			expect: "",
+		},
+		{
+			name:   "should merge once value",
+			iter:   FromSlice([]string{"foo"}),
+			sep:    ",",
+			expect: "foo",
+		},
+		{
+			name:   "should merge multiple values",
+			iter:   FromSlice([]string{"1", "2", "3", "4", "5"}),
+			sep:    ", ",
+			expect: "1, 2, 3, 4, 5",
+		},
+	}
+
+	for _, test := range testIO {
+		t.Run(test.name, func(t *testing.T) {
+			actual := Join(test.iter, test.sep)
+			assert.Equal(t, test.expect, actual)
+		})
+	}
+}
+
+func mustParseUrl(t *testing.T, s string) *url.URL {
+	u, err := url.Parse(s)
+	if err != nil {
+		t.Fatal(fmt.Sprintf("failed to parse URL: %s", err))
+	}
+
+	return u
+}
+
+func TestJoinFmt(t *testing.T) {
+
+	testIO := []struct {
+		name   string
+		iter   Interface[*url.URL]
+		sep    string
+		expect string
+	}{
+		{
+			name:   "should do nothing with empty iterator",
+			iter:   FromSlice([]*url.URL{}),
+			sep:    ",",
+			expect: "",
+		},
+		{
+			name:   "should merge once value",
+			iter:   FromSlice([]*url.URL{mustParseUrl(t, "about:blank")}),
+			sep:    ",",
+			expect: "about:blank",
+		},
+		{
+			name: "should merge multiple values",
+			iter: FromSlice([]*url.URL{
+				mustParseUrl(t, "https://example.com"),
+				mustParseUrl(t, "https://example.com/foo"),
+			}),
+			sep:    ", ",
+			expect: "https://example.com, https://example.com/foo",
+		},
+	}
+
+	for _, test := range testIO {
+		t.Run(test.name, func(t *testing.T) {
+			actual := JoinStringer(test.iter, test.sep)
+			assert.Equal(t, test.expect, actual)
+		})
+	}
 }
 
 type boundless struct{}
