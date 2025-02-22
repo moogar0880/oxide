@@ -1,6 +1,10 @@
 package iter
 
-import "github.com/moogar0880/oxide"
+import (
+	"sort"
+
+	"github.com/moogar0880/oxide"
+)
 
 // Count consumes the provided iterator, returning the number of iterations
 // that were made before the first None value is encountered.
@@ -466,4 +470,39 @@ func Interleave[T any](iter1, iter2 Interface[T]) Interface[T] {
 		iterJ:           iter2,
 		nextComingFromJ: false,
 	}
+}
+
+// Sorted returns an Interface in which all elements are sorted according to
+// the provided sorting function.
+func Sorted[T any](iter Interface[T], lessFunc func(a, b T) bool) Interface[T] {
+	sorter := &iterSort[T]{lessFunc: lessFunc, data: CollectSlice(iter)}
+	sort.Sort(sorter)
+
+	return FromSlice(sorter.data)
+}
+
+// iterSort enables dynamically sorting values of type T using a specified
+// implementation of the Less function required to implement the sort.Interface
+// interface.
+type iterSort[T any] struct {
+	lessFunc func(a, b T) bool
+	data     []T
+}
+
+// Len implements sort.Interface and returns the number of elements in the
+// collection.
+func (s *iterSort[T]) Len() int {
+	return len(s.data)
+}
+
+// Less implements sort.Interface and reports whether the element with index i
+// must sort before the element with index j.
+func (s *iterSort[T]) Less(i, j int) bool {
+	return s.lessFunc(s.data[i], s.data[j])
+}
+
+// Swap implements sort.Interface and is responsible for swapping the elements
+// with indexes i and j.
+func (s *iterSort[T]) Swap(i, j int) {
+	s.data[i], s.data[j] = s.data[j], s.data[i]
 }

@@ -862,3 +862,52 @@ func TestIterator_Interleave(t *testing.T) {
 		})
 	}
 }
+
+func TestIterator_Sort(t *testing.T) {
+	testIO := []struct {
+		name     string
+		iter     *Iterator[int]
+		lessFunc func(i, j int) bool
+		expect   []int
+	}{
+		{
+			name:     "should sort empty iterator",
+			iter:     FromSlice([]int{}),
+			lessFunc: func(i, j int) bool { return i < j },
+			expect:   []int{},
+		},
+		{
+			name:     "should sort iterator with single value",
+			iter:     FromSlice([]int{1}),
+			lessFunc: func(i, j int) bool { return i < j },
+			expect:   []int{1},
+		},
+		{
+			name:     "should sort already sorted iterator",
+			iter:     FromSlice([]int{1, 2, 3, 4, 5}),
+			lessFunc: func(i, j int) bool { return i < j },
+			expect:   []int{1, 2, 3, 4, 5},
+		},
+		{
+			name:     "should sort unsorted iterator",
+			iter:     FromSlice([]int{2, 6, 3, 1, 4, 5}),
+			lessFunc: func(i, j int) bool { return i < j },
+			expect:   []int{1, 2, 3, 4, 5, 6},
+		},
+		{
+			name:     "should sort in reverse order",
+			iter:     FromSlice([]int{2, 6, 3, 1, 4, 5}),
+			lessFunc: func(i, j int) bool { return i > j },
+			expect:   []int{6, 5, 4, 3, 2, 1},
+		},
+	}
+
+	for _, test := range testIO {
+		t.Run(test.name, func(t *testing.T) {
+			iterator := test.iter.Sorted(test.lessFunc)
+			actual := iterator.CollectSlice()
+
+			assert.Equal(t, test.expect, actual)
+		})
+	}
+}
